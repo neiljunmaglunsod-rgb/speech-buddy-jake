@@ -1,58 +1,125 @@
-import * as Speech from 'expo-speech';
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+  Nunito_400Regular,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+  useFonts,
+} from '@expo-google-fonts/nunito';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect } from 'react';
+import { Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppProvider } from './src/context/AppContext';
+import HomeScreen from './src/screens/HomeScreen';
+import LearnScreen from './src/screens/LearnScreen';
+import ProgressScreen from './src/screens/ProgressScreen';
+import QuizScreen from './src/screens/QuizScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import TipsScreen from './src/screens/TipsScreen';
+import { COLORS, FONTS } from './src/theme';
 
-export default function App() {
-  const speak = (text) => {
-    Speech.speak(text, { language: 'en-US', rate: 0.6, pitch: 1.1 });
-  };
+// Prevent the splash screen from auto-hiding before fonts are ready.
+// The .catch prevents an unhandled rejection if called too late.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
+const Tab = createBottomTabNavigator();
+
+const TAB_CONFIG = {
+  Home:     { emoji: '🏠', label: 'Home'     },
+  Learn:    { emoji: '📚', label: 'Learn'    },
+  Quiz:     { emoji: '🌟', label: 'Quiz'     },
+  Progress: { emoji: '📊', label: 'Progress' },
+  Tips:     { emoji: '💡', label: 'Tips'     },
+  Settings: { emoji: '⚙️', label: 'Settings' },
+};
+
+function TabIcon({ emoji, focused }) {
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="dark" />
-      <View style={styles.container}>
-        <Text style={styles.greeting}>👋 Hi Jake Adam!</Text>
-        <Text style={styles.subtitle}>Tap the card to hear the word</Text>
-
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => speak('Cat')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.emoji}>🐱</Text>
-          <Text style={styles.word}>Cat</Text>
-          <Text style={styles.tapHint}>🔊 Tap to hear</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: focused ? 26 : 22, opacity: focused ? 1 : 0.6, lineHeight: 30 }}>
+        {emoji}
+      </Text>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: '#87CEEB' },
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  greeting:  { fontSize: 38, fontWeight: '900', color: '#fff', marginBottom: 6 },
-  subtitle:  { fontSize: 16, color: '#fff', marginBottom: 48, opacity: 0.9 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 28,
-    padding: 36,
-    alignItems: 'center',
-    width: '100%',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-  },
-  emoji:   { fontSize: 90, marginBottom: 12 },
-  word:    { fontSize: 36, fontWeight: 'bold', color: '#2D3748', marginBottom: 8 },
-  tapHint: { fontSize: 15, color: '#87CEEB', fontWeight: '600' },
-});
+export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    Nunito_400Regular,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+  });
+
+  // Hide the splash screen as soon as fonts are ready OR if they fail.
+  // This guarantees hideAsync() is always called — the app never stays
+  // stuck behind the splash screen regardless of network conditions.
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  // KEY FIX: render the app immediately without blocking.
+  // The splash screen is still visible while fonts load (usually < 1 second
+  // since the TTF files are bundled locally). Once hideAsync() is called
+  // above, the app appears with Nunito loaded. If fonts fail, the app still
+  // appears using system fonts as a silent fallback — no crash.
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AppProvider>
+          <NavigationContainer>
+            <StatusBar style="dark" />
+            <Tab.Navigator
+              screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    emoji={TAB_CONFIG[route.name].emoji}
+                    focused={focused}
+                  />
+                ),
+                tabBarLabel: ({ focused }) => (
+                  <Text
+                    style={{
+                      fontSize:     10,
+                      fontFamily:   FONTS.bold,
+                      color:        focused ? COLORS.coral : COLORS.mediumGray,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {TAB_CONFIG[route.name].label}
+                  </Text>
+                ),
+                tabBarStyle: {
+                  backgroundColor: COLORS.white,
+                  borderTopWidth:  0,
+                  elevation:       12,
+                  shadowColor:     '#000',
+                  shadowOffset:    { width: 0, height: -3 },
+                  shadowOpacity:   0.08,
+                  shadowRadius:    8,
+                  height:          68,
+                  paddingTop:      6,
+                  paddingBottom:   8,
+                },
+                headerShown: false,
+              })}
+            >
+              <Tab.Screen name="Home"     component={HomeScreen}     />
+              <Tab.Screen name="Learn"    component={LearnScreen}    />
+              <Tab.Screen name="Quiz"     component={QuizScreen}     />
+              <Tab.Screen name="Progress" component={ProgressScreen} />
+              <Tab.Screen name="Tips"     component={TipsScreen}     />
+              <Tab.Screen name="Settings" component={SettingsScreen} />
+            </Tab.Navigator>
+          </NavigationContainer>
+        </AppProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
