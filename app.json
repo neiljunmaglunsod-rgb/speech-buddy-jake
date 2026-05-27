@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Speech Buddy",
+    "slug": "speech-buddy-jake",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#87CEEB",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.jakepapa.speechbuddy"
+    },
+    "android": {
+      "package": "com.jakepapa.speechbuddy",
+      "adaptiveIcon": {
+        "backgroundColor": "#87CEEB"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": []
+  }
+}
