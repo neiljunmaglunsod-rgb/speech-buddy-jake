@@ -10,7 +10,8 @@
       "Bash(node -e \"console.log\\(require\\('babel-preset-expo/package.json'\\).version\\)\")",
       "Bash(node -e \"console.log\\(require\\('./node_modules/expo-status-bar/package.json'\\).main\\)\")",
       "Bash(node -e \"console.log\\(require\\('./node_modules/expo-status-bar/package.json'\\).version\\)\")",
-      "PowerShell($lock = Get-Content \"d:\\\\FILES 26-2027\\\\speech-buddy-jake\\\\package-lock.json\" -Raw | ConvertFrom-Json; @\\('expo','react','react-native'\\) | ForEach-Object { \"package.lock $_ : \" + $lock.packages.\"node_modules/$_\".version })"
+      "PowerShell($lock = Get-Content \"d:\\\\FILES 26-2027\\\\speech-buddy-jake\\\\package-lock.json\" -Raw | ConvertFrom-Json; @\\('expo','react','react-native'\\) | ForEach-Object { \"package.lock $_ : \" + $lock.packages.\"node_modules/$_\".version })",
+      "PowerShell(Get-ChildItem \"d:\\\\FILES 26-2027\\\\speech-buddy-jake\" -Name | Where-Object { $_ -ne 'node_modules' })"
     ]
   }
 }

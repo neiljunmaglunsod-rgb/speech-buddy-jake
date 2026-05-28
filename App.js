@@ -4,8 +4,8 @@ import {
   Nunito_700Bold,
   Nunito_800ExtraBold,
   Nunito_900Black,
-  useFonts,
 } from '@expo-google-fonts/nunito';
+import { useFonts } from 'expo-font';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';

@@ -3,10 +3,12 @@
     "name": "Speech Buddy",
     "slug": "speech-buddy-jake",
     "version": "1.0.0",
-    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "backgroundColor": "#87CEEB",
       "resizeMode": "contain"
     },
@@ -16,13 +18,24 @@
     },
     "android": {
       "package": "com.jakepapa.speechbuddy",
+      "versionCode": 1,
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "minSdkVersion": 24,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#87CEEB"
-      }
+      },
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "582b318f-40fd-4c85-af85-883422d77734"
+      }
+    }
   }
 }
