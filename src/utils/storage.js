@@ -29,7 +29,21 @@ const DEFAULT_STREAK = {
 export async function loadProgress() {
   try {
     const raw = await AsyncStorage.getItem(KEYS.PROGRESS);
-    return raw ? { ...DEFAULT_PROGRESS, ...JSON.parse(raw) } : { ...DEFAULT_PROGRESS };
+    if (!raw) return { ...DEFAULT_PROGRESS };
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_PROGRESS,
+      ...parsed,
+      // Guard against null/non-object stored values that would crash Object.values()
+      wordsLearned:
+        parsed.wordsLearned &&
+        typeof parsed.wordsLearned === 'object' &&
+        !Array.isArray(parsed.wordsLearned)
+          ? parsed.wordsLearned
+          : {},
+      quizScores: Array.isArray(parsed.quizScores) ? parsed.quizScores : [],
+      starsTotal: typeof parsed.starsTotal === 'number' ? parsed.starsTotal : 0,
+    };
   } catch {
     return { ...DEFAULT_PROGRESS };
   }

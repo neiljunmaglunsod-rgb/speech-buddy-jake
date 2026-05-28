@@ -84,8 +84,8 @@ export default function ProgressScreen() {
   const { progress, streak, settings } = useApp();
   const childName = settings.childName || 'Jake Adam';
 
-  const totalWords = Object.values(progress.wordsLearned)
-    .reduce((sum, arr) => sum + arr.length, 0);
+  const totalWords = Object.values(progress.wordsLearned || {})
+    .reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
 
   const recentQuizzes = [...(progress.quizScores || [])]
     .reverse()

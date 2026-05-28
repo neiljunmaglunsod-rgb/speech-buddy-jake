@@ -70,7 +70,7 @@ export function AppProvider({ children }) {
 
   const isWordLearned = useCallback(
     (wordId, category) =>
-      !!(progress.wordsLearned[category] || []).includes(wordId),
+      !!((progress.wordsLearned || {})[category] || []).includes(wordId),
     [progress],
   );
 

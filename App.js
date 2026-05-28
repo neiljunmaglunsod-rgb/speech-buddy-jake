@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import {
   Nunito_400Regular,
   Nunito_700Bold,
@@ -25,6 +26,29 @@ import { COLORS, FONTS } from './src/theme';
 // Prevent the splash screen from auto-hiding before fonts are ready.
 // The .catch prevents an unhandled rejection if called too late.
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#F8F9FA' }}>
+          <Text style={{ fontSize: 48 }}>😅</Text>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#2D3748', marginTop: 16, textAlign: 'center' }}>
+            Oops! Something went wrong.
+          </Text>
+          <Text style={{ fontSize: 14, color: '#718096', marginTop: 8, textAlign: 'center' }}>
+            {__DEV__ ? String(this.state.error) : 'Please close and reopen the app.'}
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -71,6 +95,7 @@ export default function App() {
   // appears using system fonts as a silent fallback — no crash.
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
       <SafeAreaProvider>
         <AppProvider>
           <NavigationContainer>
@@ -120,6 +145,7 @@ export default function App() {
           </NavigationContainer>
         </AppProvider>
       </SafeAreaProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }
