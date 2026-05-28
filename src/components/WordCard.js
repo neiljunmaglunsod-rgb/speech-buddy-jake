@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS, FONTS, SHADOW } from '../theme';
+import { useApp } from '../context/AppContext';
 import { getWordText } from '../data/words';
+import { COLORS, FONTS, SHADOW } from '../theme';
 
 export default function WordCard({ word, language, onPress, isLearned }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { fontScale } = useApp();
 
   const handlePress = () => {
     Animated.sequence([
@@ -50,11 +52,15 @@ export default function WordCard({ word, language, onPress, isLearned }) {
       >
         {isLearned && <Text style={styles.starBadge}>⭐</Text>}
         <Text style={styles.emoji}>{word.emoji}</Text>
-        <Text style={styles.wordText} numberOfLines={2} adjustsFontSizeToFit>
+        <Text
+          style={[styles.wordText, { fontSize: 22 * fontScale }]}
+          numberOfLines={2}
+          adjustsFontSizeToFit
+        >
           {displayWord}
         </Text>
         {subWord && (
-          <Text style={styles.subText} numberOfLines={1}>
+          <Text style={[styles.subText, { fontSize: 13 * fontScale }]} numberOfLines={1}>
             {subWord}
           </Text>
         )}
@@ -93,13 +99,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   wordText: {
-    fontSize: 22,
+    // fontSize set inline with fontScale
     fontFamily: FONTS.extraBold,
     color: COLORS.darkText,
     textAlign: 'center',
   },
   subText: {
-    fontSize: 13,
+    // fontSize set inline with fontScale
     fontFamily: FONTS.regular,
     color: COLORS.lightText,
     marginTop: 2,

@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import {
   addQuizScore,
+  clearProgress,
   getStarsToday,
   getStreak,
   loadProgress,
@@ -17,19 +18,32 @@ import {
 
 const AppContext = createContext(null);
 
+// Maps fontSize setting → numeric multiplier used by components
+const FONT_SCALE_MAP = {
+  normal: 1.0,
+  large:  1.2,
+  xlarge: 1.45,
+};
+
+const DEFAULT_PROGRESS = {
+  starsTotal:   0,
+  wordsLearned: {},
+  quizScores:   [],
+  lastActive:   null,
+};
+
+const DEFAULT_STREAK = { count: 0, dates: [] };
+
 export function AppProvider({ children }) {
-  const [progress, setProgress] = useState({
-    starsTotal:   0,
-    wordsLearned: {},
-    quizScores:   [],
-    lastActive:   null,
-  });
+  const [progress, setProgress] = useState(DEFAULT_PROGRESS);
   const [settings, setSettings] = useState({
-    childName:  'Jake Adam',
-    speechRate: 0.6,
-    language:   'english',
+    childName:    'Jake Adam',
+    speechRate:   0.6,
+    language:     'english',
+    soundEnabled: true,
+    fontSize:     'normal',
   });
-  const [streak, setStreak] = useState({ count: 0, dates: [] });
+  const [streak,  setStreak]  = useState(DEFAULT_STREAK);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,7 +88,15 @@ export function AppProvider({ children }) {
     [progress],
   );
 
+  // Wipes learned words, quiz scores and streak — keeps settings intact
+  const resetProgress = useCallback(async () => {
+    await clearProgress();
+    setProgress({ ...DEFAULT_PROGRESS });
+    setStreak({ ...DEFAULT_STREAK });
+  }, []);
+
   const starsToday = getStarsToday(progress);
+  const fontScale  = FONT_SCALE_MAP[settings.fontSize] ?? 1.0;
 
   return (
     <AppContext.Provider
@@ -84,10 +106,12 @@ export function AppProvider({ children }) {
         streak,
         loading,
         starsToday,
+        fontScale,
         learnWord,
         recordQuiz,
         updateSettings,
         isWordLearned,
+        resetProgress,
       }}
     >
       {children}

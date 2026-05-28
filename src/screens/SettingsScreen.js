@@ -4,6 +4,7 @@ import {
   Keyboard,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,6 +27,12 @@ const LANG_OPTIONS = [
   { id: 'bisaya',   label: 'Bisaya',   flag: '🏝️', note: 'Milo, Iro, Kan-on…' },
 ];
 
+const FONT_SIZE_OPTIONS = [
+  { id: 'normal', label: 'Normal',    icon: '𝐀' },
+  { id: 'large',  label: 'Large',     icon: '𝐀' },
+  { id: 'xlarge', label: 'X-Large',   icon: '𝐀' },
+];
+
 // ── Section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, children }) {
   return (
@@ -38,7 +45,7 @@ function Section({ title, children }) {
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 export default function SettingsScreen() {
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings, resetProgress } = useApp();
   const { speakWord } = useSpeech(settings);
 
   const [nameInput, setNameInput] = useState(settings.childName);
@@ -59,12 +66,37 @@ export default function SettingsScreen() {
 
   const setSpeed = async (opt) => {
     await updateSettings({ speechRate: opt.value });
-    // Demo the new speed
     speakWord({ english: 'Hello', filipino: 'Kumusta', bisaya: 'Kumusta' });
   };
 
   const setLanguage = async (langId) => {
     await updateSettings({ language: langId });
+  };
+
+  const toggleSound = async (value) => {
+    await updateSettings({ soundEnabled: value });
+  };
+
+  const setFontSize = async (sizeId) => {
+    await updateSettings({ fontSize: sizeId });
+  };
+
+  const handleResetProgress = () => {
+    Alert.alert(
+      '⚠️ Reset Progress',
+      'This will erase all learned words, quiz scores, and your streak. Settings (language, speed, name) are kept.\n\nThis cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            await resetProgress();
+            Alert.alert('Done ✅', 'Progress has been reset. Keep going, Papa! 💪');
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -79,7 +111,7 @@ export default function SettingsScreen() {
           <Text style={styles.headerSub}>Customize for Jake Adam</Text>
         </View>
 
-        {/* Child name */}
+        {/* ── Child name ──────────────────────────────────────────────────── */}
         <Section title="👦 Child Name">
           <View style={styles.nameRow}>
             <TextInput
@@ -101,7 +133,7 @@ export default function SettingsScreen() {
           </Text>
         </Section>
 
-        {/* Language */}
+        {/* ── Language ────────────────────────────────────────────────────── */}
         <Section title="🌐 Language">
           <Text style={styles.subNote}>
             Words will be spoken and shown in the selected language.
@@ -112,10 +144,7 @@ export default function SettingsScreen() {
               return (
                 <TouchableOpacity
                   key={lang.id}
-                  style={[
-                    styles.optionBtn,
-                    active && styles.optionBtnActive,
-                  ]}
+                  style={[styles.optionBtn, active && styles.optionBtnActive]}
                   onPress={() => setLanguage(lang.id)}
                   activeOpacity={0.8}
                 >
@@ -145,7 +174,7 @@ export default function SettingsScreen() {
           </Text>
         </Section>
 
-        {/* Speech speed */}
+        {/* ── Speech speed ────────────────────────────────────────────────── */}
         <Section title="🔊 Speech Speed">
           <Text style={styles.subNote}>
             Slower speed is recommended for learning. Tap to preview.
@@ -156,10 +185,7 @@ export default function SettingsScreen() {
               return (
                 <TouchableOpacity
                   key={opt.id}
-                  style={[
-                    styles.speedBtn,
-                    active && styles.speedBtnActive,
-                  ]}
+                  style={[styles.speedBtn, active && styles.speedBtnActive]}
                   onPress={() => setSpeed(opt)}
                   activeOpacity={0.8}
                 >
@@ -181,7 +207,83 @@ export default function SettingsScreen() {
           </Text>
         </Section>
 
-        {/* About */}
+        {/* ── Sound effects ────────────────────────────────────────────────── */}
+        <Section title="🔔 Sound Effects">
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleInfo}>
+              <Text style={styles.toggleLabel}>Quiz sounds</Text>
+              <Text style={styles.toggleNote}>
+                Plays a chime for correct answers and a soft tone for wrong ones.
+              </Text>
+            </View>
+            <Switch
+              value={!!settings.soundEnabled}
+              onValueChange={toggleSound}
+              trackColor={{ false: COLORS.lightGray, true: COLORS.grassGreen }}
+              thumbColor={COLORS.white}
+            />
+          </View>
+        </Section>
+
+        {/* ── Text size ────────────────────────────────────────────────────── */}
+        <Section title="🔡 Text Size">
+          <Text style={styles.subNote}>
+            Makes word text bigger on Learn and Quiz cards.
+          </Text>
+          <View style={styles.speedRow}>
+            {FONT_SIZE_OPTIONS.map((opt) => {
+              const active = (settings.fontSize || 'normal') === opt.id;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[styles.speedBtn, active && styles.fontSizeBtnActive]}
+                  onPress={() => setFontSize(opt.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.fontSizeIcon,
+                      opt.id === 'large'  && { fontSize: 22 },
+                      opt.id === 'xlarge' && { fontSize: 28 },
+                    ]}
+                  >
+                    A
+                  </Text>
+                  <Text
+                    style={[
+                      styles.speedLabel,
+                      { color: active ? COLORS.white : COLORS.darkText },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <Text style={styles.hint}>
+            Recommended: Large or X-Large for easier reading.
+          </Text>
+        </Section>
+
+        {/* ── Reset progress ───────────────────────────────────────────────── */}
+        <Section title="🗑️ Reset Progress">
+          <Text style={styles.subNote}>
+            Clears all learned words, quiz scores, and streak. Your settings are kept.
+          </Text>
+          <TouchableOpacity
+            style={styles.resetBtn}
+            onPress={handleResetProgress}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.resetBtnText}>Reset All Progress</Text>
+          </TouchableOpacity>
+          <Text style={[styles.hint, { color: COLORS.coral }]}>
+            ⚠️ This cannot be undone.
+          </Text>
+        </Section>
+
+        {/* ── About ────────────────────────────────────────────────────────── */}
         <Section title="ℹ️ About">
           <View style={styles.aboutRow}>
             <Text style={styles.aboutEmoji}>🌟</Text>
@@ -197,7 +299,7 @@ export default function SettingsScreen() {
           <View style={styles.divider} />
           <Text style={styles.aboutSmall}>
             🧬 Designed for children with Cri du Chat syndrome.{'\n'}
-            📖 50 words across 6 categories: Family, Food, Animals, Body, Actions, Feelings.{'\n'}
+            📖 49 words across 6 categories: Family, Food, Animals, Body, Actions, Feelings.{'\n'}
             🗣️ 3 languages: English, Filipino (Tagalog), Bisaya (Cebuano).
           </Text>
         </Section>
@@ -278,12 +380,34 @@ const styles = StyleSheet.create({
     borderColor:    COLORS.lightGray,
     backgroundColor: COLORS.offWhite,
   },
-  speedBtnActive: {
-    backgroundColor: COLORS.grassGreen,
-    borderColor:     COLORS.grassGreen,
+  speedBtnActive:    { backgroundColor: COLORS.grassGreen, borderColor: COLORS.grassGreen },
+  fontSizeBtnActive: { backgroundColor: COLORS.skyBlue,    borderColor: COLORS.skyBlue    },
+  speedIcon:    { fontSize: 28 },
+  fontSizeIcon: { fontSize: 16, fontFamily: FONTS.black, color: COLORS.darkText, marginBottom: 2 },
+  speedLabel:   { fontSize: 15, fontFamily: FONTS.extraBold, marginTop: 4 },
+
+  // Sound toggle row
+  toggleRow: {
+    flexDirection:  'row',
+    alignItems:     'center',
+    justifyContent: 'space-between',
+    gap:            12,
   },
-  speedIcon:  { fontSize: 28 },
-  speedLabel: { fontSize: 15, fontFamily: FONTS.extraBold, marginTop: 4 },
+  toggleInfo:  { flex: 1 },
+  toggleLabel: { fontSize: 16, fontFamily: FONTS.extraBold, color: COLORS.darkText },
+  toggleNote:  { fontSize: 12, fontFamily: FONTS.regular,   color: COLORS.lightText, marginTop: 3, lineHeight: 17 },
+
+  // Reset button
+  resetBtn: {
+    backgroundColor: '#FFF0F0',
+    borderRadius:    14,
+    paddingVertical: 14,
+    alignItems:      'center',
+    borderWidth:     2,
+    borderColor:     COLORS.coral,
+    ...SHADOW.small,
+  },
+  resetBtnText: { fontSize: 17, fontFamily: FONTS.extraBold, color: COLORS.coral },
 
   aboutRow:    { flexDirection: 'row', alignItems: 'flex-start' },
   aboutEmoji:  { fontSize: 40, marginRight: 14, marginTop: 4 },

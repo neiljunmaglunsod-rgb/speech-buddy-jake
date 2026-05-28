@@ -14,9 +14,11 @@ const DEFAULT_PROGRESS = {
 };
 
 const DEFAULT_SETTINGS = {
-  childName:  'Jake Adam',
-  speechRate: 0.6,
-  language:   'english', // 'english' | 'filipino' | 'bisaya'
+  childName:    'Jake Adam',
+  speechRate:   0.6,
+  language:     'english', // 'english' | 'filipino' | 'bisaya'
+  soundEnabled: true,      // play correct/wrong sounds in quiz
+  fontSize:     'normal',  // 'normal' | 'large' | 'xlarge'
 };
 
 const DEFAULT_STREAK = {
@@ -150,4 +152,12 @@ export function getStarsToday(progress) {
 
 export function getWordsLearnedCount(progress, categoryId) {
   return (progress.wordsLearned[categoryId] || []).length;
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+
+export async function clearProgress() {
+  try {
+    await AsyncStorage.multiRemove([KEYS.PROGRESS, KEYS.STREAK]);
+  } catch {}
 }

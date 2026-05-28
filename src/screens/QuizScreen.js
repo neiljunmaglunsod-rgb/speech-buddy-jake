@@ -12,6 +12,7 @@ import Confetti from '../components/Confetti';
 import QuizCard from '../components/QuizCard';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES, getWordText, WORDS } from '../data/words';
+import { useSound } from '../hooks/useSound';
 import { useSpeech } from '../hooks/useSpeech';
 import { COLORS, FONTS, SHADOW } from '../theme';
 
@@ -29,7 +30,7 @@ function generateQuestions(count = ROUND_SIZE) {
 }
 
 // ── Option button ──────────────────────────────────────────────────────────────
-function OptionButton({ word, language, status, onPress, disabled }) {
+function OptionButton({ word, language, status, onPress, disabled, fontScale }) {
   const shakeX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -46,19 +47,16 @@ function OptionButton({ word, language, status, onPress, disabled }) {
   const bg =
     status === 'correct' ? '#D4EDDA' :
     status === 'wrong'   ? '#F8D7DA' :
-    status === 'reveal'  ? '#D4EDDA' :
     COLORS.white;
 
   const border =
     status === 'correct' ? COLORS.grassGreen :
     status === 'wrong'   ? COLORS.coral :
-    status === 'reveal'  ? COLORS.grassGreen :
     COLORS.lightGray;
 
   const textColor =
     status === 'correct' ? '#155724' :
     status === 'wrong'   ? '#721C24' :
-    status === 'reveal'  ? '#155724' :
     COLORS.darkText;
 
   return (
@@ -70,12 +68,11 @@ function OptionButton({ word, language, status, onPress, disabled }) {
         disabled={disabled}
       >
         <Text style={styles.optionEmoji}>{word.emoji}</Text>
-        <Text style={[styles.optionText, { color: textColor }]}>
+        <Text style={[styles.optionText, { color: textColor, fontSize: 22 * fontScale }]}>
           {getWordText(word, language)}
         </Text>
         {status === 'correct' && <Text style={styles.optionIcon}>✅</Text>}
         {status === 'wrong'   && <Text style={styles.optionIcon}>❌</Text>}
-        {status === 'reveal'  && <Text style={styles.optionIcon}>⭐</Text>}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -109,13 +106,14 @@ function ResultsScreen({ score, total, onPlayAgain, onHome }) {
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 export default function QuizScreen({ navigation }) {
-  const { settings, recordQuiz } = useApp();
-  const { speakWord, speakPhrase } = useSpeech(settings);
+  const { settings, recordQuiz, fontScale } = useApp();
+  const { speakWord, speakPhrase }          = useSpeech(settings);
+  const { playCorrect, playWrong }          = useSound(settings.soundEnabled);
 
   const [questions,    setQuestions]    = useState(() => generateQuestions());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score,        setScore]        = useState(0);
-  const [selected,     setSelected]     = useState(null);  // selected word id
+  const [selected,     setSelected]     = useState(null);
   const [answered,     setAnswered]     = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showResults,  setShowResults]  = useState(false);
@@ -140,8 +138,10 @@ export default function QuizScreen({ navigation }) {
       if (isCorrect) {
         setScore((s) => s + 1);
         setShowConfetti(true);
+        playCorrect();
         speakPhrase('Correct! Great job!');
       } else {
+        playWrong();
         speakWord(current.word);
       }
 
@@ -158,7 +158,8 @@ export default function QuizScreen({ navigation }) {
         }
       }, 1600);
     },
-    [answered, current, currentIndex, questions, score, speakWord, speakPhrase, recordQuiz],
+    [answered, current, currentIndex, questions, score,
+     speakWord, speakPhrase, recordQuiz, playCorrect, playWrong],
   );
 
   const handlePlayAgain = () => {
@@ -236,7 +237,7 @@ export default function QuizScreen({ navigation }) {
           />
         </View>
 
-        <Text style={styles.question}>What is this?</Text>
+        <Text style={[styles.question, { fontSize: 26 * fontScale }]}>What is this?</Text>
 
         {/* Options */}
         <View style={styles.options}>
@@ -248,6 +249,7 @@ export default function QuizScreen({ navigation }) {
               status={getOptionStatus(opt)}
               onPress={handleAnswer}
               disabled={answered}
+              fontScale={fontScale}
             />
           ))}
         </View>
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
   cardWrap: { marginVertical: 12 },
 
   question: {
-    fontSize:     26,
+    // fontSize applied inline with fontScale
     fontFamily:   FONTS.extraBold,
     color:        COLORS.darkText,
     marginBottom: 20,
@@ -307,7 +309,7 @@ const styles = StyleSheet.create({
     ...SHADOW.small,
   },
   optionEmoji: { fontSize: 30, marginRight: 14 },
-  optionText:  { fontSize: 22, fontFamily: FONTS.extraBold, flex: 1 },
+  optionText:  { fontFamily: FONTS.extraBold, flex: 1 },
   optionIcon:  { fontSize: 22 },
 
   // Results
